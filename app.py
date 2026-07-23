@@ -194,7 +194,7 @@ with tab3:
             st.markdown("---")
 
         dictamen = "EIPD OBLIGATORIA (2 o más criterios de alto riesgo)" if conteo_si_global >= 2 
-        else:
+    else:
         "EIPD RECOMENDABLE (1 criterio detectado)" if conteo_si_global == 1 
     else:
         "EIPD NO OBLIGATORIA (Riesgo Bajo)"
