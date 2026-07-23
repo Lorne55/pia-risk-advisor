@@ -192,9 +192,12 @@ with tab3:
             st.write("A continuación se presenta el resumen consolidado de tu análisis. Puedes copiar este texto para guardar tu informe de auditoría.")
             st.markdown("---")
 
-        dictamen = "EIPD OBLIGATORIA (2 o más criterios de alto riesgo)" if conteo_si_global >= 2 
-    else: "EIPD RECOMENDABLE (1 criterio detectado)" if conteo_si_global == 1 
-    else: "EIPD NO OBLIGATORIA (Riesgo Bajo)"
+       if conteo_si_global >= 2:
+    dictamen = "EIPD OBLIGATORIA (2 o más criterios de alto riesgo)"
+elif conteo_si_global == 1:
+    dictamen = "EIPD RECOMENDABLE (1 criterio detectado)"
+else:
+    dictamen = "EIPD NO OBLIGATORIA (Riesgo Bajo)"
         reporte_texto = f"=== INFORME DE PRIVACIDAD POR DISEÑO Y RIESGOS ===\n\n"
         reporte_texto += f"1. TEST DE UMBRAL (EIPD):\n"
         reporte_texto += f"- Criterios de alto riesgo detectados: {conteo_si_global} / 9\n"
