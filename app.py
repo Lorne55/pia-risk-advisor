@@ -10,8 +10,8 @@ if "riesgos_evaluados" not in st.session_state:
 st.title("🛡️ PIA & Risk Advisor — Privacidad por Diseño")
 st.caption("Herramienta interactiva para Evaluaciones de Impacto (EIPD) y Análisis de Riesgos")
 
-# Sistema de pestañas para navegar sin errores de sintaxis
-tab1, tab2 = st.tabs(["📋 1. Test de Umbral (EIPD)", "🎲 2. Análisis de Riesgos"])
+# Sistema de pestañas ampliado a 3 módulos
+tab1, tab2, tab3 = st.tabs(["📋 1. Test de Umbral (EIPD)", "🎲 2. Análisis de Riesgos", "🛡️ 3. Controles y Mitigación"])
 
 # ==========================================
 # PESTAÑA 1: TEST DE UMBRAL (EIPD)
@@ -62,7 +62,7 @@ with tab2:
 
     with st.expander("➕ Evaluar una nueva amenaza / escenario de riesgo", expanded=True):
         amenazas_comunes = [
-            "Acceso indebido o no unauthorized a los datos personales",
+            "Acceso indebido o no autorizado a los datos personales",
             "Alteración o manipulación fraudulenta de la información",
             "Pérdida accidental o destrucción física/lógica de bases de datos",
             "Fuga de información confidencial por Phishing / Malware",
@@ -95,7 +95,12 @@ with tab2:
                     "probabilidad": probabilidad,
                     "impacto": impacto,
                     "total": riesgo_total,
-                    "nivel": nivel_texto
+                    "nivel": nivel_texto,
+                    "controles": [],
+                    "prob_residual": probabilidad,
+                    "imp_residual": impacto,
+                    "total_residual": riesgo_total,
+                    "nivel_residual": nivel_texto
                 }
                 st.session_state.riesgos_evaluados.append(nuevo_riesgo)
                 st.success("¡Riesgo guardado con éxito! Revisa el inventario abajo.")
@@ -116,3 +121,70 @@ with tab2:
         if st.button("🗑️ Borrar todos los riesgos"):
             st.session_state.riesgos_evaluados = []
             st.rerun()
+
+# ==========================================
+# PESTAÑA 3: CONTROLES Y RIESGO RESIDUAL
+# ==========================================
+with tab3:
+    st.header("🛡️ Mitigación de Riesgos y Controles")
+    st.write("Aplica medidas técnicas y organizativas a los riesgos que detectaste para mitigar su impacto o probabilidad.")
+
+    if not st.session_state.riesgos_evaluados:
+        st.info("⚠️ Primero debes registrar al menos un riesgo en la pestaña **2. Análisis de Riesgos** para poder mitigarlo aquí.")
+    else:
+        st.write("Selecciona un riesgo registrado para aplicarle medidas protectoras:")
+        
+        opciones_riesgos = [f"#{i+1}: {r['amenaza'][:50]}..." for i, r in enumerate(st.session_state.riesgos_evaluados)]
+        riesgo_seleccionado_idx = st.selectbox("Elegir riesgo a mitigar:", range(len(opciones_riesgos)), format_func=lambda x: opciones_riesgos[x])
+        
+        r_actual = st.session_state.riesgos_evaluados[riesgo_seleccionado_idx]
+        
+        st.markdown(f"**Riesgo seleccionado:** *{r_actual['descripcion']}*")
+        st.info(f"Riesgo Inicial: **{r_actual['total']} ({r_actual['nivel']})** [P: {r_actual['probabilidad']}, I: {r_actual['impacto']}]")
+        
+        with st.form("form_controles"):
+            st.subheader("⚙️ Añadir Medida de Mitigación")
+            controles_sugeridos = [
+                "Cifrado de datos en reposo y en tránsito",
+                "Autenticación de Doble Factor (2FA) para accesos",
+                "Políticas estrictas de control de accesos (RBAC)",
+                "Copias de seguridad periódicas y cifradas",
+                "Formación y concienciación periódica al personal",
+                "Acuerdo de Confidencialidad y NDA firmado",
+                "Auditorías técnicas y test de penetración anuales",
+                "Otro control específico"
+            ]
+            control_tipo = st.selectbox("Medida de seguridad / salvaguarda:", controles_sugeridos)
+            control_detalles = st.text_input("Detalles de la implementación:", placeholder="Ej. Se implementará BitLocker en portátiles y cifrado AES-256.")
+            
+            st.markdown("**Reevalúa el riesgo tras aplicar este control (Riesgo Residual):**")
+            col1, col2 = st.columns(2)
+            with col1:
+                nueva_p = st.slider("Nueva Probabilidad:", 1, 5, int(r_actual["prob_residual"]))
+            with col2:
+                nuevo_i = st.slider("Nuevo Impacto:", 1, 5, int(r_actual["imp_residual"]))
+                
+            if st.form_submit_button("🛡️ Aplicar y Actualizar Riesgo"):
+                nuevo_total = nueva_p * nuevo_i
+                nuevo_nivel = "ALTO" if nuevo_total >= 15 else "MEDIO" if nuevo_total >= 8 else "BAJO"
+                
+                r_actual["controles"].append(f"{control_tipo}: {control_detalles}")
+                r_actual["prob_residual"] = nueva_p
+                r_actual["imp_residual"] = nuevo_i
+                r_actual["total_residual"] = nuevo_total
+                r_actual["nivel_residual"] = nuevo_nivel
+                
+                st.success("¡Control aplicado con éxito!")
+                st.rerun()
+
+        st.markdown("### 📊 Estado de Mitigación Actual")
+        if r_actual["controles"]:
+            st.write("**Controles aplicados:**")
+            for c in r_actual["controles"]:
+                st.write(f"- {c}")
+            
+            c1, c2 = st.columns(2)
+            c1.metric("Riesgo Bruto Inicial", f"{r_actual['total']} / 25", delta=None)
+            c2.metric("Riesgo Residual Actual", f"{r_actual['total_residual']} / 25", delta=f"{r_actual['total_residual'] - r_actual['total']}", delta_color="inverse")
+        else:
+            st.warning("Este riesgo aún no cuenta con ningún control aplicado.")
