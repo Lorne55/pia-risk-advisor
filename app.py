@@ -188,3 +188,38 @@ with tab3:
             c2.metric("Riesgo Residual Actual", f"{r_actual['total_residual']} / 25", delta=f"{r_actual['total_residual'] - r_actual['total']}", delta_color="inverse")
         else:
             st.warning("Este riesgo aún no cuenta con ningún control aplicado.")
+        with tab4:
+            st.header("📄 Generación de Informe Técnico de Privacidad")
+            st.write("A continuación se presenta el resumen consolidado de tu análisis. Puedes copiar este texto para guardar tu informe de auditoría.")
+            st.markdown("---")
+
+        dictamen = "EIPD OBLIGATORIA (2 o más criterios de alto riesgo)" if conteo_si_global >= 2 
+        else:
+        "EIPD RECOMENDABLE (1 criterio detectado)" if conteo_si_global == 1 
+    else:
+        "EIPD NO OBLIGATORIA (Riesgo Bajo)"
+        reporte_texto = f"=== INFORME DE PRIVACIDAD POR DISEÑO Y RIESGOS ===\n\n"
+        reporte_texto += f"1. TEST DE UMBRAL (EIPD):\n"
+        reporte_texto += f"- Criterios de alto riesgo detectados: {conteo_si_global} / 9\n"
+        reporte_texto += f"- Dictamen formal: {dictamen}\n\n"
+
+reporte_texto += f"2. MATRIZ DE RIESGOS E IMPACTOS:\n"
+if not st.session_state.riesgos_evaluados:
+    reporte_texto += " No se han registrado riesgos en esta sesión.\n"
+else:
+    for idx, r in enumerate(st.session_state.riesgos_evaluados):
+        reporte_texto += f"\n[Riesgo #{idx+1}] Amenaza: {r['amenaza']}\n"
+        reporte_texto += f" - Descripción del escenario: {r['descripcion']}\n"
+        reporte_texto += f" - Riesgo Inicial Bruto: {r['total']} ({r['nivel']}) [P:{r['probabilidad']}, I:{r['impacto']}]\n"
+        reporte_texto += f" - Controles y Salvaguardas:\n"
+        if r["controles"]:
+            for c in r["controles"]:
+                reporte_texto += f"   * {c}\n"
+        else:
+            reporte_texto += f"   * Ningún control registrado para esta amenaza.\n"
+            reporte_texto += f" - Riesgo Residual Post-Control: {r['total_residual']} ({r['nivel_residual']}) [P:{r['prob_residual']}, I:{r['imp_residual']}]\n"
+            st.text_area("📋 Resumen completo del informe:", value=reporte_texto, height=450)
+            
+            
+        
+        
