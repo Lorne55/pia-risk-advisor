@@ -188,7 +188,6 @@ with tab3:
             c2.metric("Riesgo Residual Actual", f"{r_actual['total_residual']} / 25", delta=f"{r_actual['total_residual'] - r_actual['total']}", delta_color="inverse")
         else:
             st.warning("Este riesgo aún no cuenta con ningún control aplicado.")
-        with tab4:
             st.header("📄 Generación de Informe Técnico de Privacidad")
             st.write("A continuación se presenta el resumen consolidado de tu análisis. Puedes copiar este texto para guardar tu informe de auditoría.")
             st.markdown("---")
